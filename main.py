@@ -12,7 +12,6 @@ class AppWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         self.plotter = None
-        self.current_figure = None
 
         self.setWindowTitle("CSV Grapher")
 
@@ -108,12 +107,15 @@ class AppWindow(QtWidgets.QMainWindow):
             item.setCheckState(QtCore.Qt.Unchecked)
             listview.addItem(item)
 
-    def apply_to_preview(self):
+    def apply_to_preview(self, save=False):
         sui = self.ui
         params = PlotParameters(sui.xAxisLabel.text(), 
-                                sui.yAxisLabel.text(), 
+                                sui.yAxisLabel.text(),
+                                sui.width.value() if save else 700,
+                                sui.height.value() if save else 500,
                                 sui.legendLabel.text(), 
                                 sui.plotTitle.text())
+        fig = None
 
         match self.ui.plotType.currentText():
             case "Line":
@@ -123,8 +125,8 @@ class AppWindow(QtWidgets.QMainWindow):
                     item = sui.l_graphs.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         colgraphs.append(item.text())
-
-                self.current_figure = self.plotter.get_line_fig(xs, ys, cols, colgraphs, params)
+            
+                fig = self.plotter.get_line_fig(xs, ys, cols, colgraphs, params)
 
             case "Pie":
                 ls, vs, fs = sui.p_label.currentText(), sui.p_value.currentText(), sui.p_filter.currentText()
@@ -141,7 +143,7 @@ class AppWindow(QtWidgets.QMainWindow):
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         filtered.append(item.text())
 
-                self.current_figure = self.plotter.get_pie_fig(ls, vs, fs, includes, filtered, params)
+                fig = self.plotter.get_pie_fig(ls, vs, fs, includes, filtered, params)
 
 
             case "Bar":
@@ -159,15 +161,18 @@ class AppWindow(QtWidgets.QMainWindow):
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         filtered.append(item.text())
                     
-                self.current_figure = self.plotter.get_bar_fig(ls, vs, fs, colgraphs, filtered, ori, params)
-
-        self.ui.plotView.setHtml(self.current_figure.to_html(include_plotlyjs="cdn"))
+                fig = self.plotter.get_bar_fig(ls, vs, fs, colgraphs, filtered, ori, params)
+        if save:
+            return fig
+        else:
+            self.ui.plotView.setHtml(fig.to_html(include_plotlyjs="cdn"))
 
     def save_figure(self):
         f, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save As", "", "EPS (*.eps);; PNG (*.png);; JPG (*.jpg)")
         
         if f:
-            fig = self.current_figure.update_layout(width = self.ui.width.value(), height = self.ui.height.value())
+            fig = self.apply_to_preview(True)
+            fig.update_layout(width = self.ui.width.value(), height = self.ui.height.value())
             fig.write_image(f)
 
 

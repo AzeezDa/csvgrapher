@@ -11,6 +11,8 @@ pd.options.plotting.backend = "plotly"
 class PlotParameters:
     xlabel: str
     ylabel: str
+    width: int
+    height: int
     legend_title: str
     title: str
 
@@ -31,12 +33,40 @@ class Plotter():
     def get_uniques_in(self, name: str) -> list[str]:
         return [] if name == '' else [str(x) for x in self.uniques[name]]
 
-    def get_line_fig(self, x: str, y: str, col_graph: str, graphs, params: PlotParameters):
+    def get_line_fig(self, x: str, y: str, col_graph: str, graphs: list[str], params: PlotParameters):
         df = self.data[self.data[col_graph].isin(graphs)]
 
         fig = px.line(df, x = x, y = y, color=col_graph)
 
+        colors = px.colors.qualitative.Plotly
+        L = len(colors)
+        ymax = max(df[y])
+        ylasts = df[df[x] == (df.iloc[-1, df.columns.get_loc(x)])]
+        yld = []
+        for i, g in enumerate(graphs):
+            yld.append([g, colors[i%L], ylasts.loc[ylasts[col_graph] == g, y].iloc[0]/ymax])
+
+        yld.sort(reverse=True, key=lambda x: x[2])
+        
+        ratio = float(params.width)/params.height
+        dy = 22 / params.height
+        for i in range(len(yld)):
+            if i > 1 and abs(yld[i-1][2] - yld[i][2]) < dy:
+                cdy = yld[i-1][2] - yld[i][2]
+                for j in range(i, len(yld)):
+                    yld[j][2] -= 1.01*dy-cdy
+
+            font = {"color": yld[i][1]}
+            fig.add_annotation(font=font, 
+                               x=max(1.008, 1+(ratio-1)/(40*ratio)), y=yld[i][2], 
+                               xref="x domain", yref="paper",
+                               ax=1, ay = 0, xanchor="left", yanchor="middle",
+                               text=yld[i][0], showarrow=False)
+
         setup_fig_look(fig, params)
+
+        margin = max(map(len, graphs))
+        fig.update_layout(showlegend=False, margin=dict(r=params.width/15+margin*6))
 
         return fig
 
@@ -72,7 +102,8 @@ class Plotter():
         df[filter] = df[filter].astype(str)
 
         fig = px.pie(df, values=value, names=label)
-        fig.update_layout(title = params.title, legend_title_text = params.legend_title)
+        fig.update_traces(textinfo = "label+percent", textposition="outside")
+        fig.update_layout(title = params.title, legend_title_text = params.legend_title, showlegend=False)
         
         return fig
 
