@@ -34,17 +34,19 @@ class Plotter():
         return [] if name == '' else [str(x) for x in self.uniques[name]]
 
     def get_line_fig(self, x: str, y: str, col_graph: str, graphs: list[str], params: PlotParameters):
-        df = self.data[self.data[col_graph].isin(graphs)]
+        df = self.data.loc[self.data[col_graph].isin(graphs)]
 
         fig = px.line(df, x = x, y = y, color=col_graph)
 
         colors = px.colors.qualitative.Plotly
         L = len(colors)
         ymax = max(df[y])
-        ylasts = df[df[x] == (df.iloc[-1, df.columns.get_loc(x)])]
+
         yld = []
         for i, g in enumerate(graphs):
-            yld.append([g, colors[i%L], ylasts.loc[ylasts[col_graph] == g, y].iloc[0]/ymax])
+            ylasts = df.loc[df[col_graph] == g]
+            ylast = ylasts.iloc[-1, df.columns.get_loc(y)]
+            yld.append([g, colors[i%L], ylast/ymax])
 
         yld.sort(reverse=True, key=lambda x: x[2])
         
@@ -73,7 +75,7 @@ class Plotter():
     def get_bar_fig(self, label: str, value: str, filter:str, include_labels: list[str], filtered: list[str], orientation: str, params: PlotParameters):
         if self.data.dtypes[label] == int64:
             include_labels = [int64(x) for x in include_labels]
-        
+    
         if self.data.dtypes[filter] == int64:
             filtered = [int64(x) for x in filtered]
 

@@ -121,7 +121,7 @@ class AppWindow(QtWidgets.QMainWindow):
             case "Line":
                 xs, ys, cols = sui.l_xAxis.currentText(), sui.l_yAxis.currentText(), sui.l_column.currentText()
                 colgraphs = []
-                for i in range(sui.l_graphs.count()-1):
+                for i in range(sui.l_graphs.count()):
                     item = sui.l_graphs.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         colgraphs.append(item.text())
@@ -132,13 +132,13 @@ class AppWindow(QtWidgets.QMainWindow):
                 ls, vs, fs = sui.p_label.currentText(), sui.p_value.currentText(), sui.p_filter.currentText()
 
                 includes = []
-                for i in range(sui.p_include.count()-1):
+                for i in range(sui.p_include.count()):
                     item = sui.p_include.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         includes.append(item.text())
 
                 filtered = []
-                for i in range(sui.p_filtered.count()-1):
+                for i in range(sui.p_filtered.count()):
                     item = sui.p_filtered.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         filtered.append(item.text())
@@ -150,13 +150,13 @@ class AppWindow(QtWidgets.QMainWindow):
                 ls, vs, fs = sui.b_label.currentText(), sui.b_value.currentText(), sui.b_filter.currentText()
                 ori = "v" if sui.b_orient.currentText() == "Vertical" else "h"
                 colgraphs = []
-                for i in range(sui.b_inlabels.count()-1):
+                for i in range(sui.b_inlabels.count()):
                     item = sui.b_inlabels.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         colgraphs.append(item.text())
 
                 filtered = []
-                for i in range(sui.b_filtered.count()-1):
+                for i in range(sui.b_filtered.count()):
                     item = sui.b_filtered.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         filtered.append(item.text())
