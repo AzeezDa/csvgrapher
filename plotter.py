@@ -38,6 +38,10 @@ class Plotter():
 
         fig = px.line(df, x = x, y = y, color=col_graph)
 
+        if not graphs:
+            setup_fig_look(fig, params)
+            return fig
+
         colors = px.colors.qualitative.Plotly
         L = len(colors)
         ymax = max(df[y])

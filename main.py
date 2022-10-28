@@ -1,8 +1,9 @@
 import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from main_window import Ui_MainWindow
 from plotter import Plotter, PlotParameters
 from functools import partial
+import traceback
 
 class AppWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -15,8 +16,8 @@ class AppWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("CSV Grapher")
 
-        self.ui.newFile.triggered.connect(self.load_data)
-        self.ui.saveFile.triggered.connect(self.save_figure)
+        self.ui.newFile.triggered.connect(partial(self.error_handle, self.load_data, "Error encountered while loading file"))
+        self.ui.saveFile.triggered.connect(partial(self.error_handle, self.save_figure, "Error encountered while saving file"))
 
         self.ui.plotType.currentTextChanged.connect(self.change_ptype)
 
@@ -38,7 +39,7 @@ class AppWindow(QtWidgets.QMainWindow):
         self.ui.b_value.currentTextChanged.connect(partial(self.update_text_edit, self.ui.yAxisLabel, self.ui.b_value))
 
 
-        self.ui.applyButton.clicked.connect(self.apply_to_preview)
+        self.ui.applyButton.clicked.connect(partial(self.error_handle, self.apply_to_preview, "Error applying plot to preview"))
         
 
     def load_data(self):
@@ -174,6 +175,23 @@ class AppWindow(QtWidgets.QMainWindow):
             fig = self.apply_to_preview(True)
             fig.update_layout(width = self.ui.width.value(), height = self.ui.height.value())
             fig.write_image(f)
+
+    def display_error(self, short: str, detailed: str):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Error")
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Close)
+        msg.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Close)
+
+        msg.setText(short)
+        msg.setDetailedText(detailed)
+        msg.exec_()
+
+    def error_handle(self, func, error_msg: str):
+        try:
+            func()
+        except Exception as e:
+            self.display_error(error_msg, traceback.format_exc())
 
 
 app = QtWidgets.QApplication(sys.argv)
