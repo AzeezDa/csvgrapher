@@ -114,6 +114,7 @@ class AppWindow(QtWidgets.QMainWindow):
                                 sui.yAxisLabel.text(),
                                 sui.width.value() if save else 700,
                                 sui.height.value() if save else 500,
+                                sui.fontSize.value() if save else 14,
                                 sui.legendLabel.text(), 
                                 sui.plotTitle.text())
         fig = None
@@ -169,11 +170,11 @@ class AppWindow(QtWidgets.QMainWindow):
             self.ui.plotView.setHtml(fig.to_html(include_plotlyjs="cdn"))
 
     def save_figure(self):
-        f, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save As", "", "EPS (*.eps);; PNG (*.png);; JPG (*.jpg)")
+        f, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save As", "", "EPS (*.eps);; PNG (*.png);; JPG (*.jpg);; SVG (*.svg)")
         
         if f:
             fig = self.apply_to_preview(True)
-            fig.update_layout(width = self.ui.width.value(), height = self.ui.height.value())
+            fig.update_layout(width = self.ui.width.value(), height = self.ui.height.value(), font = dict(size = self.ui.fontSize.value()))
             fig.write_image(f)
 
     def display_error(self, short: str, detailed: str):

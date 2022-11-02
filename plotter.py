@@ -13,6 +13,7 @@ class PlotParameters:
     ylabel: str
     width: int
     height: int
+    font_size: int
     legend_title: str
     title: str
 
@@ -55,7 +56,7 @@ class Plotter():
         yld.sort(reverse=True, key=lambda x: x[2])
         
         ratio = float(params.width)/params.height
-        dy = 22 / params.height
+        dy = (params.font_size + 8) / params.height
         for i in range(len(yld)):
             if i > 1 and abs(yld[i-1][2] - yld[i][2]) < dy:
                 cdy = yld[i-1][2] - yld[i][2]
@@ -114,7 +115,10 @@ class Plotter():
         return fig
 
 def setup_fig_look(fig, params: PlotParameters):
-    fig.update_layout(plot_bgcolor = "White", title = params.title, legend_title_text = params.legend_title, yaxis_tickformat = "%d")
+    fig.update_layout(plot_bgcolor = "White", 
+                      title = params.title, 
+                      legend_title_text = params.legend_title, 
+                      yaxis_tickformat = "%d")
     fig.update_xaxes(title_text = params.xlabel, showgrid = False)
     fig.update_yaxes(title_text = params.ylabel, griddash = "dot", gridcolor = "LightGrey", rangemode="tozero", zeroline = True)
 
