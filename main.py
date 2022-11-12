@@ -116,7 +116,12 @@ class AppWindow(QtWidgets.QMainWindow):
                                 sui.height.value() if save else 500,
                                 sui.fontSize.value() if save else 14,
                                 sui.legendLabel.text(), 
-                                sui.plotTitle.text())
+                                sui.plotTitle.text(),
+                                sui.titlePosition.currentText(),
+                                sui.xTicksFormat.currentText(),
+                                sui.yTicksFormat.currentText(),
+                                sui.b_legend.isChecked(),
+                                sui.b_multicolor.isChecked())
         fig = None
 
         match self.ui.plotType.currentText():

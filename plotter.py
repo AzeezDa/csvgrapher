@@ -1,4 +1,3 @@
-from turtle import bgcolor
 import pandas as pd
 from numpy import int64
 import plotly.graph_objects as go
@@ -6,6 +5,7 @@ import plotly.express as px
 from dataclasses import dataclass
 
 pd.options.plotting.backend = "plotly"
+COLORS = px.colors.qualitative.Plotly
 
 @dataclass
 class PlotParameters:
@@ -16,6 +16,11 @@ class PlotParameters:
     font_size: int
     legend_title: str
     title: str
+    title_position: str
+    xaxis_ticks: str
+    yaxis_ticks: str
+    b_show_legend: bool
+    b_multicoloured: bool
 
 class Plotter():
     def __init__(self, file_name):
@@ -43,15 +48,15 @@ class Plotter():
             setup_fig_look(fig, params)
             return fig
 
-        colors = px.colors.qualitative.Plotly
-        L = len(colors)
+        
+        L = len(COLORS)
         ymax = max(df[y])
 
         yld = []
         for i, g in enumerate(graphs):
             ylasts = df.loc[df[col_graph] == g]
             ylast = ylasts.iloc[-1, df.columns.get_loc(y)]
-            yld.append([g, colors[i%L], ylast/ymax])
+            yld.append([g, COLORS[i%L], ylast/ymax])
 
         yld.sort(reverse=True, key=lambda x: x[2])
         
@@ -90,11 +95,17 @@ class Plotter():
 
         if orientation == "v":
             fig = px.bar(df, x=label, y=value, color=filter)
+            fig.update_layout(xaxis={'categoryorder':'total descending'})
         else:
             fig = px.bar(df, x=value, y=label, color=filter, orientation=orientation)
             params.xlabel, params.ylabel = params.ylabel, params.xlabel
+            fig.update_layout(yaxis={'categoryorder':'total descending'})
         
-        setup_fig_look(fig, params)
+        setup_fig_look(fig, params, orientation != "v")
+        fig.update_layout(barmode="stack", showlegend = params.b_show_legend)
+        
+        if params.b_multicoloured:
+            fig.update_traces(marker_color = COLORS)
 
         return fig
 
@@ -114,12 +125,31 @@ class Plotter():
         
         return fig
 
-def setup_fig_look(fig, params: PlotParameters):
+def setup_fig_look(fig, params: PlotParameters, transpose = False):
+
+
     fig.update_layout(plot_bgcolor = "White", 
                       title = params.title, 
-                      legend_title_text = params.legend_title, 
-                      yaxis_tickformat = "%d")
-    fig.update_xaxes(title_text = params.xlabel, showgrid = False)
-    fig.update_yaxes(title_text = params.ylabel, griddash = "dot", gridcolor = "LightGrey", rangemode="tozero", zeroline = True)
+                      legend_title_text = params.legend_title,
+                      xaxis_tickformat = get_tick_format(params.xaxis_ticks),
+                      yaxis_tickformat = get_tick_format(params.yaxis_ticks),
+                      title_x = 0.0 if params.title_position == "Left" else 0.5 if params.title_position == "Center" else 1.0)
+    if not transpose:
+        fig.update_xaxes(title_text = params.xlabel, showgrid = False)
+        fig.update_yaxes(title_text = params.ylabel, griddash = "dot", gridcolor = "LightGrey", rangemode="tozero", zeroline = True)
+    else:
+        fig.update_xaxes(title_text = params.xlabel, griddash = "dot", gridcolor = "LightGrey")
+        fig.update_yaxes(title_text = params.xlabel, showgrid = False, rangemode="tozero", zeroline = True)
 
     return fig
+
+def get_tick_format(type: str):
+    match type:
+        case "Full":
+            return "d"
+        case "Reduced":
+            return ".3"
+        case "SI":
+            return ".3s"
+
+    return ""
