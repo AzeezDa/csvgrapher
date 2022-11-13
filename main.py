@@ -2,6 +2,7 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 from main_window import Ui_MainWindow
 from plotter import Plotter, PlotParameters
+from converter import ConverterWindow
 from functools import partial
 import traceback
 
@@ -13,11 +14,13 @@ class AppWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         self.plotter = None
+        self.converter_window = None
 
         self.setWindowTitle("CSV Grapher")
 
         self.ui.newFile.triggered.connect(partial(self.error_handle, self.load_data, "Error encountered while loading file"))
         self.ui.saveFile.triggered.connect(partial(self.error_handle, self.save_figure, "Error encountered while saving file"))
+        self.ui.actionConvert.triggered.connect(partial(self.error_handle, self.open_converter, "Error encountered while opening the converter"))
 
         self.ui.plotType.currentTextChanged.connect(self.change_ptype)
 
@@ -38,9 +41,10 @@ class AppWindow(QtWidgets.QMainWindow):
         self.ui.b_label.currentTextChanged.connect(partial(self.update_text_edit, self.ui.xAxisLabel, self.ui.b_label))
         self.ui.b_value.currentTextChanged.connect(partial(self.update_text_edit, self.ui.yAxisLabel, self.ui.b_value))
 
-
         self.ui.applyButton.clicked.connect(partial(self.error_handle, self.apply_to_preview, "Error applying plot to preview"))
-        
+
+    def open_converter(self):
+        self.converter_window = ConverterWindow(self)
 
     def load_data(self):
         f, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Project Data", "", "CSV (*.csv)")

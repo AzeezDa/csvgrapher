@@ -236,8 +236,14 @@ class Ui_MainWindow(object):
         self.newFile.setObjectName("newFile")
         self.saveFile = QtWidgets.QAction(MainWindow)
         self.saveFile.setObjectName("saveFile")
+        self.actionConvert_Format = QtWidgets.QAction(MainWindow)
+        self.actionConvert_Format.setObjectName("actionConvert_Format")
+        self.actionConvert = QtWidgets.QAction(MainWindow)
+        self.actionConvert.setObjectName("actionConvert")
         self.menuFile.addAction(self.newFile)
         self.menuFile.addAction(self.saveFile)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionConvert)
         self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -292,4 +298,6 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.newFile.setText(_translate("MainWindow", "New"))
         self.saveFile.setText(_translate("MainWindow", "Save As"))
+        self.actionConvert_Format.setText(_translate("MainWindow", "Convert Format"))
+        self.actionConvert.setText(_translate("MainWindow", "Convert"))
 from PyQt5 import QtWebEngineWidgets

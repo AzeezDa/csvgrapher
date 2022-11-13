@@ -787,6 +787,8 @@
     </property>
     <addaction name="newFile"/>
     <addaction name="saveFile"/>
+    <addaction name="separator"/>
+    <addaction name="actionConvert"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -804,6 +806,11 @@
   <action name="actionConvert_Format">
    <property name="text">
     <string>Convert Format</string>
+   </property>
+  </action>
+  <action name="actionConvert">
+   <property name="text">
+    <string>Convert</string>
    </property>
   </action>
  </widget>
