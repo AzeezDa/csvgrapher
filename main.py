@@ -1,8 +1,10 @@
 import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from main_window import Ui_MainWindow
 from plotter import Plotter, PlotParameters
+from converter import ConverterWindow
 from functools import partial
+import traceback
 
 class AppWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -12,11 +14,13 @@ class AppWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         self.plotter = None
+        self.converter_window = None
 
         self.setWindowTitle("CSV Grapher")
 
-        self.ui.newFile.triggered.connect(self.load_data)
-        self.ui.saveFile.triggered.connect(self.save_figure)
+        self.ui.newFile.triggered.connect(partial(self.error_handle, self.load_data, "Error encountered while loading file"))
+        self.ui.saveFile.triggered.connect(partial(self.error_handle, self.save_figure, "Error encountered while saving file"))
+        self.ui.actionConvert.triggered.connect(partial(self.error_handle, self.open_converter, "Error encountered while opening the converter"))
 
         self.ui.plotType.currentTextChanged.connect(self.change_ptype)
 
@@ -37,9 +41,10 @@ class AppWindow(QtWidgets.QMainWindow):
         self.ui.b_label.currentTextChanged.connect(partial(self.update_text_edit, self.ui.xAxisLabel, self.ui.b_label))
         self.ui.b_value.currentTextChanged.connect(partial(self.update_text_edit, self.ui.yAxisLabel, self.ui.b_value))
 
+        self.ui.applyButton.clicked.connect(partial(self.error_handle, self.apply_to_preview, "Error applying plot to preview"))
 
-        self.ui.applyButton.clicked.connect(self.apply_to_preview)
-        
+    def open_converter(self):
+        self.converter_window = ConverterWindow(self)
 
     def load_data(self):
         f, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Project Data", "", "CSV (*.csv)")
@@ -113,15 +118,21 @@ class AppWindow(QtWidgets.QMainWindow):
                                 sui.yAxisLabel.text(),
                                 sui.width.value() if save else 700,
                                 sui.height.value() if save else 500,
+                                sui.fontSize.value() if save else 14,
                                 sui.legendLabel.text(), 
-                                sui.plotTitle.text())
+                                sui.plotTitle.text(),
+                                sui.titlePosition.currentText(),
+                                sui.xTicksFormat.currentText(),
+                                sui.yTicksFormat.currentText(),
+                                sui.b_legend.isChecked(),
+                                sui.b_multicolor.isChecked())
         fig = None
 
         match self.ui.plotType.currentText():
             case "Line":
                 xs, ys, cols = sui.l_xAxis.currentText(), sui.l_yAxis.currentText(), sui.l_column.currentText()
                 colgraphs = []
-                for i in range(sui.l_graphs.count()-1):
+                for i in range(sui.l_graphs.count()):
                     item = sui.l_graphs.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         colgraphs.append(item.text())
@@ -132,13 +143,13 @@ class AppWindow(QtWidgets.QMainWindow):
                 ls, vs, fs = sui.p_label.currentText(), sui.p_value.currentText(), sui.p_filter.currentText()
 
                 includes = []
-                for i in range(sui.p_include.count()-1):
+                for i in range(sui.p_include.count()):
                     item = sui.p_include.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         includes.append(item.text())
 
                 filtered = []
-                for i in range(sui.p_filtered.count()-1):
+                for i in range(sui.p_filtered.count()):
                     item = sui.p_filtered.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         filtered.append(item.text())
@@ -150,13 +161,13 @@ class AppWindow(QtWidgets.QMainWindow):
                 ls, vs, fs = sui.b_label.currentText(), sui.b_value.currentText(), sui.b_filter.currentText()
                 ori = "v" if sui.b_orient.currentText() == "Vertical" else "h"
                 colgraphs = []
-                for i in range(sui.b_inlabels.count()-1):
+                for i in range(sui.b_inlabels.count()):
                     item = sui.b_inlabels.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         colgraphs.append(item.text())
 
                 filtered = []
-                for i in range(sui.b_filtered.count()-1):
+                for i in range(sui.b_filtered.count()):
                     item = sui.b_filtered.item(i)
                     if item.checkState() == QtCore.Qt.CheckState.Checked:
                         filtered.append(item.text())
@@ -168,12 +179,29 @@ class AppWindow(QtWidgets.QMainWindow):
             self.ui.plotView.setHtml(fig.to_html(include_plotlyjs="cdn"))
 
     def save_figure(self):
-        f, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save As", "", "EPS (*.eps);; PNG (*.png);; JPG (*.jpg)")
+        f, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save As", "", "EPS (*.eps);; PNG (*.png);; JPG (*.jpg);; SVG (*.svg)")
         
         if f:
             fig = self.apply_to_preview(True)
-            fig.update_layout(width = self.ui.width.value(), height = self.ui.height.value())
+            fig.update_layout(width = self.ui.width.value(), height = self.ui.height.value(), font = dict(size = self.ui.fontSize.value()))
             fig.write_image(f)
+
+    def display_error(self, short: str, detailed: str):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Error")
+        msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Close)
+        msg.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Close)
+
+        msg.setText(short)
+        msg.setDetailedText(detailed)
+        msg.exec_()
+
+    def error_handle(self, func, error_msg: str):
+        try:
+            func()
+        except Exception as e:
+            self.display_error(error_msg, traceback.format_exc())
 
 
 app = QtWidgets.QApplication(sys.argv)
