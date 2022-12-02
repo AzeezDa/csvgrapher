@@ -14,58 +14,267 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QStackedWidget" name="plotOptions">
+   <widget class="QWebEngineView" name="plotView" native="true">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>80</y>
-      <width>241</width>
-      <height>611</height>
+      <y>10</y>
+      <width>781</width>
+      <height>411</height>
      </rect>
     </property>
-    <property name="frameShape">
-     <enum>QFrame::WinPanel</enum>
+   </widget>
+   <widget class="QTabWidget" name="optionsTabview">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>440</y>
+      <width>781</width>
+      <height>261</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>true</bool>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
-    <widget class="QWidget" name="lineOptions">
-     <widget class="QComboBox" name="l_xAxis">
+    <widget class="QWidget" name="tableQuerying">
+     <attribute name="title">
+      <string>Table Querying</string>
+     </attribute>
+     <widget class="QListWidget" name="columnSelect">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>40</y>
         <width>211</width>
+        <height>192</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="columnCondSel">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>90</y>
+        <width>221</width>
+        <height>111</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="columnWhere">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>40</y>
+        <width>221</width>
         <height>22</height>
        </rect>
       </property>
      </widget>
-     <widget class="QComboBox" name="l_yAxis">
+     <widget class="QPushButton" name="addCondition">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>100</y>
-        <width>211</width>
-        <height>22</height>
+        <x>270</x>
+        <y>210</y>
+        <width>221</width>
+        <height>23</height>
        </rect>
       </property>
-     </widget>
-     <widget class="QListWidget" name="l_graphs">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>200</y>
-        <width>211</width>
-        <height>391</height>
-       </rect>
+      <property name="text">
+       <string>Add Condition</string>
       </property>
      </widget>
-     <widget class="QLabel" name="_l_xlabel">
+     <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>20</y>
-        <width>211</width>
+        <width>47</width>
+        <height>13</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>SELECT</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_6">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>20</y>
+        <width>47</width>
+        <height>13</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>WHERE</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>70</y>
+        <width>47</width>
+        <height>13</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>EQUALS</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="currentConds">
+      <property name="geometry">
+       <rect>
+        <x>540</x>
+        <y>40</y>
+        <width>231</width>
+        <height>191</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>540</x>
+        <y>20</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Current Conditions</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="plotTypeSettings">
+     <attribute name="title">
+      <string>Plot Settings</string>
+     </attribute>
+     <widget class="QComboBox" name="plotType">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>30</y>
+        <width>51</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Line</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Bar</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Pie</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>10</y>
+        <width>51</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Plot Type</string>
+      </property>
+     </widget>
+     <widget class="QStackedWidget" name="plotSettings">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>80</y>
+        <width>271</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::WinPanel</enum>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="empty"/>
+      <widget class="QWidget" name="bar">
+       <widget class="QComboBox" name="barOrient">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>40</y>
+          <width>191</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_12">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>191</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Orientation</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>80</y>
+          <width>121</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Multicoloured Bars</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="showLegend">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>100</y>
+          <width>91</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show Legend</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QComboBox" name="basedOn">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>30</y>
+        <width>241</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="variableLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>60</y>
+        <width>171</width>
         <height>16</height>
        </rect>
       </property>
@@ -73,12 +282,22 @@
        <string>X Axis</string>
       </property>
      </widget>
-     <widget class="QLabel" name="_l_ylabel">
+     <widget class="QComboBox" name="xAxis">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>80</y>
-        <width>211</width>
+        <width>171</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="valueLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>130</y>
+        <width>171</width>
         <height>16</height>
        </rect>
       </property>
@@ -86,379 +305,445 @@
        <string>Y Axis</string>
       </property>
      </widget>
-     <widget class="QLabel" name="_l_colabel">
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>10</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Based On</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="yAxis">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>150</y>
-        <width>211</width>
+        <width>171</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="basedOnList">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>60</y>
+        <width>241</width>
+        <height>161</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_13">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>60</y>
+        <width>271</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>Column to plot</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="l_column">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>170</y>
-        <width>211</width>
-        <height>22</height>
-       </rect>
+       <string>Plot Specific Settings</string>
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="pieOptions">
-     <widget class="QComboBox" name="p_label">
+    <widget class="QWidget" name="textSettings">
+     <attribute name="title">
+      <string>Textual Settings</string>
+     </attribute>
+     <widget class="QComboBox" name="yTicksFormat">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>40</y>
-        <width>211</width>
-        <height>22</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="_p_datlabel">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>20</y>
-        <width>211</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Label</string>
-      </property>
-     </widget>
-     <widget class="QListWidget" name="p_include">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>140</y>
-        <width>211</width>
-        <height>171</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="_p_colabel">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>120</y>
-        <width>211</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Labels to include:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="_p_filabel">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>320</y>
-        <width>211</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Filter</string>
-      </property>
-     </widget>
-     <widget class="QListWidget" name="p_filtered">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>370</y>
-        <width>211</width>
-        <height>221</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="p_filter">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>340</y>
-        <width>211</width>
-        <height>22</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="_p_datlabel_2">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>70</y>
-        <width>211</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Value</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="p_value">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>90</y>
-        <width>211</width>
-        <height>22</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="barOptions">
-     <widget class="QComboBox" name="b_value">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>90</y>
-        <width>211</width>
-        <height>22</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QListWidget" name="b_inlabels">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>240</y>
-        <width>211</width>
-        <height>151</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="_b_valabel">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>70</y>
-        <width>211</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Value Axis</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="_b_label">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>20</y>
-        <width>211</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Label Axis</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="b_label">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>40</y>
-        <width>211</width>
-        <height>22</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="b_orient">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>140</y>
-        <width>211</width>
+        <x>560</x>
+        <y>110</y>
+        <width>91</width>
         <height>22</height>
        </rect>
       </property>
       <item>
        <property name="text">
-        <string>Vertical</string>
+        <string>Auto</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>Horisontal</string>
+        <string>Full</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Reduced</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>SI</string>
        </property>
       </item>
      </widget>
-     <widget class="QLabel" name="_b_orilabel">
+     <widget class="QLabel" name="_b_label_3">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>120</y>
-        <width>211</width>
+        <x>460</x>
+        <y>90</y>
+        <width>91</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>Orientation</string>
+       <string>X-Axis Tick Format</string>
       </property>
      </widget>
-     <widget class="QLabel" name="_b_inlabel">
+     <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>220</y>
-        <width>211</width>
-        <height>16</height>
+        <x>460</x>
+        <y>150</y>
+        <width>47</width>
+        <height>13</height>
        </rect>
       </property>
       <property name="text">
-       <string>Included Labels</string>
+       <string>Width</string>
       </property>
      </widget>
-     <widget class="QLabel" name="_b_fillabel">
+     <widget class="QSpinBox" name="width">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>410</y>
-        <width>211</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Filter based on column</string>
-      </property>
-     </widget>
-     <widget class="QListWidget" name="b_filtered">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>460</y>
-        <width>211</width>
-        <height>131</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="b_filter">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>430</y>
-        <width>211</width>
+        <x>460</x>
+        <y>170</y>
+        <width>91</width>
         <height>22</height>
        </rect>
       </property>
-     </widget>
-     <widget class="QCheckBox" name="b_multicolor">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>170</y>
-        <width>211</width>
-        <height>17</height>
-       </rect>
+      <property name="minimum">
+       <number>0</number>
       </property>
-      <property name="text">
-       <string>Multicoloured Bars</string>
+      <property name="maximum">
+       <number>5000</number>
+      </property>
+      <property name="value">
+       <number>700</number>
       </property>
      </widget>
-     <widget class="QCheckBox" name="b_legend">
+     <widget class="QLabel" name="_b_label_2">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>190</y>
+        <x>460</x>
+        <y>30</y>
         <width>191</width>
-        <height>17</height>
+        <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>Show Legend</string>
+       <string>Title Position</string>
       </property>
-      <property name="checked">
+     </widget>
+     <widget class="QComboBox" name="titlePosition">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>50</y>
+        <width>191</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Left</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Center</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Right</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLineEdit" name="yAxisLabel">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>110</y>
+        <width>191</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="maxLength">
+       <number>32767</number>
+      </property>
+      <property name="frame">
        <bool>true</bool>
       </property>
+      <property name="placeholderText">
+       <string>Y Axis Label (If Applicable)</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="xTicksFormat">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>110</y>
+        <width>91</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Auto</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Full</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Reduced</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>SI</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QSpinBox" name="fontSize">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>170</y>
+        <width>71</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="suffix">
+       <string/>
+      </property>
+      <property name="prefix">
+       <string/>
+      </property>
+      <property name="minimum">
+       <number>2</number>
+      </property>
+      <property name="maximum">
+       <number>96</number>
+      </property>
+      <property name="value">
+       <number>14</number>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="legendLabel">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>160</y>
+        <width>191</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="maxLength">
+       <number>32767</number>
+      </property>
+      <property name="frame">
+       <bool>true</bool>
+      </property>
+      <property name="placeholderText">
+       <string>Legend Title</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>150</y>
+        <width>71</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Font Size</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_3">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>150</y>
+        <width>47</width>
+        <height>13</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Height</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="xAxisLabel">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>110</y>
+        <width>191</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="maxLength">
+       <number>32767</number>
+      </property>
+      <property name="frame">
+       <bool>true</bool>
+      </property>
+      <property name="placeholderText">
+       <string>X Axis Label (If Applicable)</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="_b_label_4">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>90</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Y-Axis Tick Format</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="plotTitle">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>50</y>
+        <width>391</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="maxLength">
+       <number>32767</number>
+      </property>
+      <property name="frame">
+       <bool>true</bool>
+      </property>
+      <property name="placeholderText">
+       <string>Plot Title</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="height">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>170</y>
+        <width>91</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="suffix">
+       <string/>
+      </property>
+      <property name="prefix">
+       <string/>
+      </property>
+      <property name="maximum">
+       <number>5000</number>
+      </property>
+      <property name="value">
+       <number>500</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="_b_label_5">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>30</y>
+        <width>391</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Plot Title</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="_b_label_6">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>90</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>X Axis Label (If Applicable)</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="_b_label_7">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>90</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Y Axis Label (If Applicable)</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="_b_label_8">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>140</y>
+        <width>191</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Legend Title</string>
+      </property>
      </widget>
     </widget>
-   </widget>
-   <widget class="QComboBox" name="plotType">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>241</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Line</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Pie</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Bar</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QWebEngineView" name="plotView" native="true">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>70</y>
-      <width>500</width>
-      <height>350</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="plotTitle">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>460</y>
-      <width>391</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="inputMask">
-     <string/>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="maxLength">
-     <number>32767</number>
-    </property>
-    <property name="frame">
-     <bool>true</bool>
-    </property>
-    <property name="placeholderText">
-     <string>Plot Title</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>241</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Plot Type</string>
-    </property>
    </widget>
    <widget class="QPushButton" name="applyButton">
     <property name="geometry">
      <rect>
       <x>700</x>
-      <y>460</y>
+      <y>430</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -466,310 +751,6 @@
     <property name="text">
      <string>Apply</string>
     </property>
-   </widget>
-   <widget class="QLineEdit" name="xAxisLabel">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>490</y>
-      <width>191</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="inputMask">
-     <string/>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="maxLength">
-     <number>32767</number>
-    </property>
-    <property name="frame">
-     <bool>true</bool>
-    </property>
-    <property name="placeholderText">
-     <string>X Axis Label (If Applicable)</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="yAxisLabel">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>490</y>
-      <width>191</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="inputMask">
-     <string/>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="maxLength">
-     <number>32767</number>
-    </property>
-    <property name="frame">
-     <bool>true</bool>
-    </property>
-    <property name="placeholderText">
-     <string>Y Axis Label (If Applicable)</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="legendLabel">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>540</y>
-      <width>191</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="inputMask">
-     <string/>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="maxLength">
-     <number>32767</number>
-    </property>
-    <property name="frame">
-     <bool>true</bool>
-    </property>
-    <property name="placeholderText">
-     <string>Legend Title</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="width">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>600</y>
-      <width>91</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>0</number>
-    </property>
-    <property name="maximum">
-     <number>5000</number>
-    </property>
-    <property name="value">
-     <number>700</number>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="height">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>600</y>
-      <width>91</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="suffix">
-     <string/>
-    </property>
-    <property name="prefix">
-     <string/>
-    </property>
-    <property name="maximum">
-     <number>5000</number>
-    </property>
-    <property name="value">
-     <number>500</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>580</y>
-      <width>47</width>
-      <height>13</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Width</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>580</y>
-      <width>47</width>
-      <height>13</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Height</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="fontSize">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>650</y>
-      <width>71</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="suffix">
-     <string/>
-    </property>
-    <property name="prefix">
-     <string/>
-    </property>
-    <property name="minimum">
-     <number>2</number>
-    </property>
-    <property name="maximum">
-     <number>96</number>
-    </property>
-    <property name="value">
-     <number>14</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>630</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Font Size</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="titlePosition">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>540</y>
-      <width>191</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Left</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Center</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Right</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QLabel" name="_b_label_2">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>520</y>
-      <width>191</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Title Position</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="xTicksFormat">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>600</y>
-      <width>91</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Auto</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Full</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Reduced</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>SI</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QLabel" name="_b_label_3">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>580</y>
-      <width>91</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>X-Axis Tick Format</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="_b_label_4">
-    <property name="geometry">
-     <rect>
-      <x>580</x>
-      <y>580</y>
-      <width>91</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Y-Axis Tick Format</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="yTicksFormat">
-    <property name="geometry">
-     <rect>
-      <x>580</x>
-      <y>600</y>
-      <width>91</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Auto</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Full</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Reduced</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>SI</string>
-     </property>
-    </item>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -787,8 +768,6 @@
     </property>
     <addaction name="newFile"/>
     <addaction name="saveFile"/>
-    <addaction name="separator"/>
-    <addaction name="actionConvert"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>

@@ -1,184 +1,93 @@
 import sys
 from PyQt5 import QtCore, QtWidgets
 from main_window import Ui_MainWindow
-from plotter import Plotter, PlotParameters
-from converter import ConverterWindow
+from plotter import Plotter
+from querier import Querier
 from functools import partial
 import traceback
 
 class AppWindow(QtWidgets.QMainWindow):
     def __init__(self):
+        """# `AppWindow`
+        Initialises the main application window.
+        """
         super().__init__()
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.plotter = None
-        self.converter_window = None
-
         self.setWindowTitle("CSV Grapher")
 
-        self.ui.newFile.triggered.connect(partial(self.error_handle, self.load_data, "Error encountered while loading file"))
-        self.ui.saveFile.triggered.connect(partial(self.error_handle, self.save_figure, "Error encountered while saving file"))
-        self.ui.actionConvert.triggered.connect(partial(self.error_handle, self.open_converter, "Error encountered while opening the converter"))
+        self.connect_trigger(self.ui.newFile, self.load_data, "Error encountered while loading file")
+        self.connect_trigger(self.ui.saveFile, self.save_figure, "Error encountered while saving file")
 
-        self.ui.plotType.currentTextChanged.connect(self.change_ptype)
-
-        self.ui.l_column.currentTextChanged.connect(partial(self.update_column_graphs, self.ui.l_graphs, self.ui.l_column))
-        self.ui.l_column.currentTextChanged.connect(partial(self.update_text_edit, self.ui.legendLabel, self.ui.l_column))
-
-        self.ui.p_label.currentTextChanged.connect(partial(self.update_column_graphs, self.ui.p_include, self.ui.p_label))
-        self.ui.p_label.currentTextChanged.connect(partial(self.update_text_edit, self.ui.legendLabel, self.ui.p_label))
-        self.ui.p_filter.currentTextChanged.connect(partial(self.update_column_graphs, self.ui.p_filtered, self.ui.p_filter))
-
-        self.ui.b_label.currentTextChanged.connect(partial(self.update_column_graphs, self.ui.b_inlabels, self.ui.b_label))
-        self.ui.b_filter.currentTextChanged.connect(partial(self.update_column_graphs, self.ui.b_filtered, self.ui.b_filter))
-        self.ui.b_filter.currentTextChanged.connect(partial(self.update_text_edit, self.ui.legendLabel, self.ui.b_filter))
-
-        self.ui.l_xAxis.currentTextChanged.connect(partial(self.update_text_edit, self.ui.xAxisLabel, self.ui.l_xAxis))
-        self.ui.l_yAxis.currentTextChanged.connect(partial(self.update_text_edit, self.ui.yAxisLabel, self.ui.l_yAxis))
-
-        self.ui.b_label.currentTextChanged.connect(partial(self.update_text_edit, self.ui.xAxisLabel, self.ui.b_label))
-        self.ui.b_value.currentTextChanged.connect(partial(self.update_text_edit, self.ui.yAxisLabel, self.ui.b_value))
-
-        self.ui.applyButton.clicked.connect(partial(self.error_handle, self.apply_to_preview, "Error applying plot to preview"))
-
-    def open_converter(self):
-        self.converter_window = ConverterWindow(self)
+        self.connect_click(self.ui.applyButton, self.apply_to_preview, "Error applying plot to preview")
 
     def load_data(self):
+        """# `load_data`
+        Opens a file context for the user to open a .csv file from.
+        When the file is chosen, it resets the window and sets up a new `Querier`
+        """
         f, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Project Data", "", "CSV (*.csv)")
         if f:
             self.clear_all()
-            self.plotter = Plotter(f)
+            self.querier = Querier(f)
             self.set_options()
     
     def clear_all(self):
-        to_clear = ["l_xAxis", "l_yAxis", "l_column", "l_graphs" ,
-                    "p_label" ,"p_value", "p_include", "p_filter", "p_filtered", 
-                    "b_label", "b_value" ,"b_inlabels", "b_filter", "b_filtered"]
+        """# `clear_all`
+        Clears all list views, combo boxes and text inputs
+        """
+        to_clear = ["columnSelect", "columnWhere", "columnCondSel", "currentConds",
+                    "xAxis", "yAxis", "basedOn", "basedOnList",
+                    "plotTitle", "xAxisLabel", "yAxisLabel", "legendLabel"]
 
-        for w in to_clear:
-            eval(f"self.ui.{w}.clear()")
+        for widget in to_clear:
+            eval(f"self.ui.{widget}.clear()")
 
     def set_options(self):
-        # Line
-        cols = self.plotter.get_columns()
-        self.ui.l_xAxis.addItems(cols)
-        self.ui.l_yAxis.addItems(cols)
-        self.ui.l_column.addItems(cols)
+        """# `set_options`
+        Sets up the window widgets, such as the combo boxes and list widgets with data from the imported .csv file
+        """
+        columns = self.querier.columns()
+        self.ui.columnWhere.addItems(columns)
+        self.ui.xAxis.addItems(columns)
+        self.ui.yAxis.addItems(columns)
+        self.ui.basedOn.addItems(["COLUMNS"] + columns)
 
-        # Pie
-        self.ui.p_label.addItems(cols)
-        self.ui.p_value.addItems(cols)
-        self.ui.p_filter.addItems(cols)
+        self.fill_lists(self.ui.columnSelect, columns)
+        self.fill_lists(self.ui.basedOnList, columns)
 
-        # Bar
-        self.ui.b_label.addItems(cols)
-        self.ui.b_value.addItems(cols)
-        self.ui.b_filter.addItems(cols)
+    def fill_lists(self, widget: QtWidgets.QListWidget, values: list[str], check = True):
+        """# `fill_lists`
+        Given a `QListWidget` and a list of strings, fill the list widget with items from the list of strings
+        ## Args:
+            widget (QtWidgets.QListWidget): A PyQt ListWidget to add items to
+            values (list[str]): A list of strings that will be added as items in the list widget
+            check (bool, optional): If true then the items will have a checkbox as well. Defaults to True.
+        """
+        for value in values:
+            item = QtWidgets.QListWidgetItem(value)
+            if check:
+                item.setFlags(item.flags() | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
+                item.setCheckState(QtCore.Qt.Unchecked)
+            widget.addItem(item)
 
     def update_text_edit(self, field: QtWidgets.QTextEdit, value: QtWidgets.QComboBox):
-        field.setText(value.currentText())
+        field.setText(value.currentText()) # TODO
 
     def change_ptype(self):
-        curr = self.ui.plotType.currentText()
-        if self.plotter:
-            self.plotter.plot_type = curr
-
-        match curr:
-            case "Line":
-                self.ui.plotOptions.setCurrentIndex(0)
-                self.update_column_graphs(self.ui.l_graphs, self.ui.l_column)
-            case "Pie":
-                self.ui.plotOptions.setCurrentIndex(1)
-                self.update_column_graphs(self.ui.p_include, self.ui.p_label)
-                self.update_column_graphs(self.ui.p_filtered, self.ui.p_filter)
-            case "Bar":
-                self.ui.plotOptions.setCurrentIndex(2)
-                self.update_column_graphs(self.ui.b_inlabels, self.ui.b_label)
-                self.update_column_graphs(self.ui.b_filtered, self.ui.b_filter)
-
-    def update_column_graphs(self, listview: QtWidgets.QListWidget, choice: QtWidgets.QComboBox):
-        if self.plotter is None:
-            return
-
-        uniques = self.plotter.get_uniques_in(choice.currentText())
-
-        listview.clear()
-        for u in uniques:
-            item = QtWidgets.QListWidgetItem(u)
-            item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
-            item.setCheckState(QtCore.Qt.Unchecked)
-            listview.addItem(item)
+        pass # TODO
 
     def apply_to_preview(self, save=False):
-        sui = self.ui
-        params = PlotParameters(sui.xAxisLabel.text(), 
-                                sui.yAxisLabel.text(),
-                                sui.width.value() if save else 700,
-                                sui.height.value() if save else 500,
-                                sui.fontSize.value() if save else 14,
-                                sui.legendLabel.text(), 
-                                sui.plotTitle.text(),
-                                sui.titlePosition.currentText(),
-                                sui.xTicksFormat.currentText(),
-                                sui.yTicksFormat.currentText(),
-                                sui.b_legend.isChecked(),
-                                sui.b_multicolor.isChecked())
-        fig = None
-
-        match self.ui.plotType.currentText():
-            case "Line":
-                xs, ys, cols = sui.l_xAxis.currentText(), sui.l_yAxis.currentText(), sui.l_column.currentText()
-                colgraphs = []
-                for i in range(sui.l_graphs.count()):
-                    item = sui.l_graphs.item(i)
-                    if item.checkState() == QtCore.Qt.CheckState.Checked:
-                        colgraphs.append(item.text())
-            
-                fig = self.plotter.get_line_fig(xs, ys, cols, colgraphs, params)
-
-            case "Pie":
-                ls, vs, fs = sui.p_label.currentText(), sui.p_value.currentText(), sui.p_filter.currentText()
-
-                includes = []
-                for i in range(sui.p_include.count()):
-                    item = sui.p_include.item(i)
-                    if item.checkState() == QtCore.Qt.CheckState.Checked:
-                        includes.append(item.text())
-
-                filtered = []
-                for i in range(sui.p_filtered.count()):
-                    item = sui.p_filtered.item(i)
-                    if item.checkState() == QtCore.Qt.CheckState.Checked:
-                        filtered.append(item.text())
-
-                fig = self.plotter.get_pie_fig(ls, vs, fs, includes, filtered, params)
-
-
-            case "Bar":
-                ls, vs, fs = sui.b_label.currentText(), sui.b_value.currentText(), sui.b_filter.currentText()
-                ori = "v" if sui.b_orient.currentText() == "Vertical" else "h"
-                colgraphs = []
-                for i in range(sui.b_inlabels.count()):
-                    item = sui.b_inlabels.item(i)
-                    if item.checkState() == QtCore.Qt.CheckState.Checked:
-                        colgraphs.append(item.text())
-
-                filtered = []
-                for i in range(sui.b_filtered.count()):
-                    item = sui.b_filtered.item(i)
-                    if item.checkState() == QtCore.Qt.CheckState.Checked:
-                        filtered.append(item.text())
-                    
-                fig = self.plotter.get_bar_fig(ls, vs, fs, colgraphs, filtered, ori, params)
+        return # TODO
         if save:
             return fig
         else:
             self.ui.plotView.setHtml(fig.to_html(include_plotlyjs="cdn"))
 
     def save_figure(self):
+        # TODO
         f, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save As", "", "EPS (*.eps);; PNG (*.png);; JPG (*.jpg);; SVG (*.svg)")
         
         if f:
@@ -186,7 +95,39 @@ class AppWindow(QtWidgets.QMainWindow):
             fig.update_layout(width = self.ui.width.value(), height = self.ui.height.value(), font = dict(size = self.ui.fontSize.value()))
             fig.write_image(f)
 
+
+    # === CONNECT BUTTONS AND TRIGGERES === 
+    def connect_click(self, widget: QtWidgets.QWidget, function: callable, error_message: str = ""):
+        """# `connect_click`
+        Give a clickable widget a function to call when clicked. If any error occurs during that call display a given error message.
+
+        ## Args:
+            widget (QtWidgets.QWidget): The clickable widget to connect a function to
+            function (callable): The function to call upon clicking the widget
+            error_message (str, optional): The error message to display if an error occurs during the function call. Defaults to "".
+        """
+        widget.clicked.connect(partial(self.error_handle, function, error_message))
+
+    def connect_trigger(self, widget: QtWidgets.QWidget, function: callable, error_message: str = ""):
+        """# `connect_trigger`
+        Give a triggerable widget a function to call when triggered. If any error occurs during that call display a given error message.
+        
+        ## Args:
+            widget (QtWidgets.QWidget): The triggerable widget to connect a function to
+            function (callable): The function to call upon triggering the widget
+            error_message (str, optional): The error message to display if an error occurs during the function call. Defaults to "".
+        """
+        widget.triggered.connect(partial(self.error_handle, function, error_message))
+
+    # === ERROR DISPLAYER ===
     def display_error(self, short: str, detailed: str):
+        """# `display_error`
+        Displays an error window with a short and a long description.
+
+        ## Args:
+            - `short (str)`: A short and concise description of the error
+            - `detailed (str)`: A long description of the error, usually including the traceback
+        """
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("Error")
         msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
@@ -197,11 +138,18 @@ class AppWindow(QtWidgets.QMainWindow):
         msg.setDetailedText(detailed)
         msg.exec_()
 
-    def error_handle(self, func, error_msg: str):
+    def error_handle(self, func: callable, error_message: str):
+        """# `error_handle`
+        Wrap a function in an error handler that displays a window showing a given error message that can be expanded to display the traceback.
+
+        ## Args:
+            - `func (callable)`: Function to wrap inside the error handler
+            - `error_message (str)`: The short message to display when an error occurs
+        """
         try:
             func()
         except Exception as e:
-            self.display_error(error_msg, traceback.format_exc())
+            self.display_error(error_message, traceback.format_exc())
 
 
 app = QtWidgets.QApplication(sys.argv)
