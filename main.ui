@@ -19,8 +19,8 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>781</width>
-      <height>411</height>
+      <width>780</width>
+      <height>410</height>
      </rect>
     </property>
    </widget>
@@ -37,7 +37,7 @@
      <bool>true</bool>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tableQuerying">
      <attribute name="title">
@@ -131,7 +131,7 @@
         <x>540</x>
         <y>40</y>
         <width>231</width>
-        <height>191</height>
+        <height>161</height>
        </rect>
       </property>
      </widget>
@@ -146,6 +146,19 @@
       </property>
       <property name="text">
        <string>Current Conditions</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="clearConds">
+      <property name="geometry">
+       <rect>
+        <x>680</x>
+        <y>210</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Clear Conditions</string>
       </property>
      </widget>
     </widget>
@@ -217,6 +230,16 @@
           <height>22</height>
          </rect>
         </property>
+        <item>
+         <property name="text">
+          <string>Vertical</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Horisontal</string>
+         </property>
+        </item>
        </widget>
        <widget class="QLabel" name="label_12">
         <property name="geometry">
@@ -231,7 +254,7 @@
          <string>Orientation</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="multicolour">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -780,16 +803,6 @@
   <action name="saveFile">
    <property name="text">
     <string>Save As</string>
-   </property>
-  </action>
-  <action name="actionConvert_Format">
-   <property name="text">
-    <string>Convert Format</string>
-   </property>
-  </action>
-  <action name="actionConvert">
-   <property name="text">
-    <string>Convert</string>
    </property>
   </action>
  </widget>

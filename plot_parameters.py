@@ -1,41 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
 
-class Position(Enum):
-    """# `Position`
-    An enum class that stores a horisontal position:
-    - `LEFT = 0`
-    - `CENTER = 1`
-    - `RIGHT = 2`
-    """
-    LEFT = 0
-    CENTER = 1
-    RIGHT = 2
-
-class TickFormat(Enum):
-    """# `TickFormat`
-    An enum class that stores a plot tick format:
-    - `AUTO = 0`, e.g. 10k
-    - `FULL = 1`, e.g. 10000
-    - `SI = 2`, e.g. 1e+4
-    - `REDUCED = 3`, e.g. 10.0 (maximum of 2 decimals)
-    """
-    AUTO = 0
-    FULL = 1
-    SI = 2
-    REDUCED = 3
-
-class PlotType(Enum):
-    """# `PlotType`
-    An enum class that stores a type of plot among:
-    - `LINE = 0`
-    - `BAR = 1`
-    - `PIE = 2`
-    """
-    LINE = 0
-    BAR = 1
-    PIE = 2
-
 @dataclass
 class PlotParameters:
     """# `PlotParameters`
@@ -56,6 +21,6 @@ class PlotParameters:
     width: int
     height: int
     font_size: int
-    title_position: Position
-    x_tick_format: TickFormat
-    y_tick_format: TickFormat
+    title_position: str
+    x_tick_format: str
+    y_tick_format: str
