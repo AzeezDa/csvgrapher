@@ -47,6 +47,12 @@ class AppWindow(QtWidgets.QMainWindow):
         # basedOn combobox changes
         self.connect_text_change(self.ui.basedOn, self.based_on_update, "Error while updating the based-on list")
 
+        # Changing x ticks customisability
+        self.connect_check_change(self.ui.enableXTicks, self.x_ticks_update, "Error while changing x ticks state")
+
+        # Changing x ticks customisability
+        self.connect_check_change(self.ui.enableYTicks, self.y_ticks_update, "Error while changing y ticks state")
+
         self.ui.optionsTabview.currentChanged.connect(partial(self.error_handle, self.tab_changed, "Error changing tabs"))
 
 
@@ -85,14 +91,22 @@ class AppWindow(QtWidgets.QMainWindow):
         """# `fill_lists`
         Given a `QListWidget` and a list of strings, fill the list widget with items from the list of strings
         ## Args:
-            widget (QtWidgets.QListWidget): A PyQt ListWidget to add items to
-            values (list[str]): A list of strings that will be added as items in the list widget
-            check (bool, optional): If true then the items will have a checkbox as well. Defaults to True.
+            `widget (QtWidgets.QListWidget)`: A PyQt ListWidget to add items to
+            `values (list[str])`: A list of strings that will be added as items in the list widget
+            `check (bool, optional)`: If true then the items will have a checkbox as well. Defaults to True.
         """
         for value in values:
             self.add_to_list(widget, value, check)
 
     def add_to_list(self, widget: QtWidgets.QListWidget, value: str, check = True):
+        """ # `add_to_list`
+        Given a `QListWidget` add an item with a string `value` to it. Also if `check` is `True` then that item has a checkbox
+
+        ## Args:
+            `widget (QtWidgets.QListWidget)`: A list widget to add an item to.
+            `value (str)`: The value to add to the list.
+            `check (bool, optional)`: True if the item should have a checkbox. Defaults to True.
+        """
         item = QtWidgets.QListWidgetItem(value)
         if check:
             item.setFlags(item.flags() | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
@@ -100,6 +114,15 @@ class AppWindow(QtWidgets.QMainWindow):
         widget.addItem(item)
 
     def get_checked(self, widget: QtWidgets.QListWidget) -> list[str]:
+        """# `get_checked`
+        Get the checked items in a given `QListWidget`
+
+        ## Args:
+            `widget (QtWidgets.QListWidget)`: An `QListWidget` to get the currently checked items from
+
+        ## Returns:
+            `list[str]`: A list of `string`s of the checked items in the given list
+        """
         checked = []
         for i in range(widget.count()):
             item = widget.item(i)
@@ -109,6 +132,15 @@ class AppWindow(QtWidgets.QMainWindow):
         return checked
 
     def apply_to_preview(self, save=False):
+        """# `apply_to_preview`
+        Applies the plot parameters into the Plotter and get the resulting figure based on whether or not it is a preview or save
+
+        ## Args:
+            `save (bool, optional)`: If `True` then the figure returned is supplied with the save parameters rather than preview parameters. Defaults to False.
+
+        ## Returns:
+            `Figure`: A plotly figure
+        """
         parameters = self.scrape_parameters()
 
         if save:
@@ -121,6 +153,9 @@ class AppWindow(QtWidgets.QMainWindow):
             self.ui.plotView.setHtml(figure.to_html(include_plotlyjs="cdn"))
 
     def save_figure(self):
+        """# `save_figure`
+        Get the preview with the save parameters and write it to the given file
+        """
         f, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save As", "", "EPS (*.eps);; PNG (*.png);; JPG (*.jpg);; SVG (*.svg)")
         
         if f:
@@ -128,6 +163,11 @@ class AppWindow(QtWidgets.QMainWindow):
             figure.write_image(f)
 
     def scrape_parameters(self) -> PlotParameters:
+        """# `scrape_parameters`
+
+        Returns:
+            `PlotParameters`: A `PlotParameters` dataclass containing the parameters from the Qt Window 
+        """
         based_on_list = self.get_checked(self.ui.basedOnList)
         based_on = self.ui.basedOn.currentText()
         if self.ui.basedOn != "COLUMNS":
@@ -139,7 +179,7 @@ class AppWindow(QtWidgets.QMainWindow):
             based_on_list,
             self.ui.plotType.currentText(),
             self.ui.multicolour.isChecked(),
-            self.ui.barOrient.currentText() == 'Vertical',
+            self.ui.barOrient.currentText() == 'Vertical', # Is vertical
             self.ui.plotTitle.text(),
             self.ui.xAxisLabel.text(),
             self.ui.yAxisLabel.text(),
@@ -150,23 +190,32 @@ class AppWindow(QtWidgets.QMainWindow):
             self.ui.fontSize.value(),
             self.ui.titlePosition.currentText(),
             self.ui.xTicksFormat.currentText(),
-            self.ui.yTicksFormat.currentText()
+            self.ui.yTicksFormat.currentText(),
+            self.ui.enableXTicks.isChecked(),
+            self.ui.enableYTicks.isChecked(),
+            self.ui.xTicks.value(),
+            self.ui.yTicks.value()
         )
 
         return parameters
 
     def tab_changed(self):
+        """# `tab_changed`
+        The function that is called when the tab is changed. It update the tab that is switched to.
+        """
         tab_index = self.ui.optionsTabview.currentIndex()
-        if self.querier is None or self.previous_tab != 0:
+        if self.querier is None or self.previous_tab != 0: # If don't switch from Query Tab then skip
             self.previous_tab = tab_index
             return
 
+        # If we switch from Query Tab then we clean all other data and parameters in the Plot Settings
         self.previous_tab = tab_index
 
         result = self.querier.query(self.get_checked(self.ui.columnSelect), self.conditions)
-        self.subquerier = Querier(result)
+        self.subquerier = Querier(result) # Handles queries in the queried table generated by the Query Tab
         columns = self.subquerier.columns()
         
+        # Clear and reset Plot Settings parameters
         self.ui.xAxis.clear()
         self.ui.yAxis.clear()
         self.ui.basedOn.clear()
@@ -176,25 +225,37 @@ class AppWindow(QtWidgets.QMainWindow):
         self.ui.basedOn.addItems(["COLUMNS"] + columns)
 
     def add_condition(self):
+        """# `add_condition`
+        Add a condition to the condition list. Used in the Query Tab
+        """
         column = self.ui.columnWhere.currentText()
         checked = self.get_checked(self.ui.columnCondSel)
-        checked = self.querier.incorporate_dtype(column, checked)
+        checked = self.querier.incorporate_dtype(column, checked) # Correct the type because all values are stored as strings
 
         condition = EqualityCondition(column, checked)
         self.conditions.append(condition)
         self.add_to_list(self.ui.currentConds, str(condition), False)
 
     def clear_conditions(self):
+        """# `clear_conditions`
+        Removes all items in the current condition list
+        """
         self.ui.currentConds.clear()
         self.conditions.clear()
 
     def update_where_list(self):
+        """# `update_where_list`
+        In the Query Tab, when a the column name under the WHERE statement changes update the list under the EQUALS label
+        """
         self.ui.columnCondSel.clear()
         column = self.ui.columnWhere.currentText()
         uniques = self.querier.uniques(column)
         self.fill_lists(self.ui.columnCondSel, uniques)
         
     def based_on_update(self):
+        """# `based_on_update`
+        In the Plot Settings tab, if the based on value changes (in the combo box) then update the list below it.
+        """
         if self.subquerier is None:
             return
 
@@ -208,20 +269,36 @@ class AppWindow(QtWidgets.QMainWindow):
             self.ui.yAxis.setEnabled(True)
 
     def plot_type_update(self):
+        """# `plot_type_update`
+        In the Plot Settings tab, when the plot type value changes (in the combo box), update the settings underneath it to switch to a side containing any specific settings.
+        Also change the name of the labels above the axis choices to reflect a better terminology connected to the plot type
+        """
         current_type = self.ui.plotType.currentText()
         if current_type in ["Bar", "Pie"]:
             if current_type == "Bar":
-                self.ui.plotSettings.setCurrentIndex(1)
+                self.ui.plotSettings.setCurrentIndex(1) # Bar has specific settings on page 2 of the stacked widget
             else:
-                self.ui.plotSettings.setCurrentIndex(0)
+                self.ui.plotSettings.setCurrentIndex(0) # Pie has no specific settings
 
             self.ui.variableLabel.setText("Label")
             self.ui.valueLabel.setText("Value")
-        else:
-            self.ui.plotSettings.setCurrentIndex(0)
+        else: # Line plot
+            self.ui.plotSettings.setCurrentIndex(0) # No specific settings
             self.ui.variableLabel.setText("X Axis")
             self.ui.valueLabel.setText("Y Axis")
 
+    def x_ticks_update(self):
+        """# `x_ticks_update`
+        If the user enables the x ticks customisability then enable to spin box that customises the number of ticks 
+        """
+        self.ui.xTicks.setEnabled(self.ui.enableXTicks.isChecked())
+
+
+    def y_ticks_update(self):
+        """# `y_ticks_update`
+        If the user enables the y ticks customisability then enable to spin box that customises the number of ticks 
+        """
+        self.ui.yTicks.setEnabled(self.ui.enableYTicks.isChecked())
 
     # === CONNECT BUTTONS AND TRIGGERES === 
     def connect_click(self, widget: QtWidgets.QWidget, function: callable, error_message: str = ""):
@@ -256,6 +333,17 @@ class AppWindow(QtWidgets.QMainWindow):
             error_message (str, optional): The error message to display if an error occurs during the function call. Defaults to "".
         """
         widget.currentTextChanged.connect(partial(self.error_handle, function, error_message))
+
+    def connect_check_change(self, widget: QtWidgets.QWidget, function: callable, error_message: str = ""):
+        """# `connect_check_change`
+        Give a widget whose check can change a function to call when its text is changed. If any error occurs during that call display a given error message.
+        
+        ## Args:
+            widget (QtWidgets.QWidget): The widget whose check state can change
+            function (callable): The function to call upon changing the check state of the widget
+            error_message (str, optional): The error message to display if an error occurs during the function call. Defaults to "".
+        """
+        widget.stateChanged.connect(partial(self.error_handle, function, error_message))
 
     # === ERROR DISPLAYER ===
     def display_error(self, short: str, detailed: str):

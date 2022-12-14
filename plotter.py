@@ -1,13 +1,15 @@
+import math
 import pandas as pd
 from pandas import DataFrame
 import plotly.express as px
 import plotly.graph_objects as go
 from plot_parameters import PlotParameters
+from numpy import linspace, log10, floor
 
 pd.options.plotting.backend = "plotly"
 COLORS = px.colors.qualitative.Plotly
 COLOR_AMOUNT = len(COLORS)
-COLUMNS = "COLUMNS"
+COLUMNS = "COLUMNS" # To avoid typos doing hocus pocus xD
 
 class Plotter():
     """# `Plotter`
@@ -47,7 +49,7 @@ class Plotter():
         Based on the `Plotter`'s `PlotParamters` return a line plot
 
         ## Returns:
-            Figure: A plotly express line plot
+            `Figure`: A plotly express line plot
         """
         figure = go.Figure()
         if self.plot_parameters.based_on == COLUMNS:
@@ -73,18 +75,57 @@ class Plotter():
 
         margin = max(map(len, self.plot_parameters.based_on_list))
         figure.update_layout(showlegend=False, margin=dict(r=self.plot_parameters.width / 15 + margin * 6))
+        figure.update_xaxes(title_font=dict(color='Black'), tickfont = dict(color='Black'))
+        figure.update_yaxes(title_font=dict(color='Black'), tickfont = dict(color='Black'))
+        
+        if self.plot_parameters.enable_x_ticks:
+            self.__custom_ticks(figure, True)
+        if self.plot_parameters.enable_y_ticks:
+            self.__custom_ticks(figure, False)
 
         return figure
 
-    def __add_line_legend_long(self, figure):
-        """# `__add_line_legend`
-        Take a plotly express line plot and adds a special legend to it that is a label at the end of each line with the same colour as that line
+    def __custom_ticks(self, figure, is_x: bool):
+        """ # `__custom_ticks`
 
         ## Args:
-            figure (Figure): A plotly express line plot that needs a special legend added
+            `figure (Figure)`: A line plot to modify the number of ticks of
+            `is_x (bool)`: Specifices if the changes is done on the x or the y axis
+        """
+        data = figure.data[0].x if is_x else figure.data[0].y
+
+        max0, min0 = max(data), min(data)
+
+        # Find the max amongst all plotted data
+        for d in range(1, len(figure.data)):
+            data = figure.data[d].x if is_x else figure.data[d].y
+            max0, min0 = max(max0, max(data)), min(min0, min(data))
+
+        # Replace all non significant digit values with 0's to have "nice" linespace tick values
+        maxdat = abs(max0)
+        maxexp = 0 if maxdat == 0 else floor(log10(maxdat))
+        mindat = abs(min0)
+        minexp = 0 if mindat == 0 else floor(log10(mindat))
+        nticks = self.plot_parameters.x_ticks if is_x else self.plot_parameters.y_ticks
+        tick_vals = linspace(10**minexp * floor(mindat/(10**minexp)) * (-1 if min0 < 0 else 1), 
+                          10**maxexp * floor(maxdat/(10**maxexp)) * (-1 if max0 < 0 else 1), 
+                          endpoint = True, num=nticks)[1:]
+
+        if is_x:
+            figure.update_xaxes(tickvals = tick_vals, nticks = nticks)
+        else:
+            figure.update_yaxes(tickvals = tick_vals, nticks = nticks)
+
+    def __add_line_legend_long(self, figure):
+        """# `__add_line_legend_long`
+        Take a plotly express line plot and adds a special legend to it that is a label at the end of each line with the same colour as that line.
+        THIS WORKS FOR LONG TABLE FORMATS. I.E DATA IS STORED IN A COLUMN
+
+        ## Args:
+            `figure (Figure)`: A plotly express line plot that needs a special legend added
 
         ## Returns:
-            Figure: A plotly express line plot with a special legend added
+            `Figure`: A plotly express line plot with a special legend added
         """
         if not self.plot_parameters.based_on_list:
             self.__setup_figure_look(figure)
@@ -118,6 +159,16 @@ class Plotter():
         return figure
 
     def __add_line_legend_wide(self, figure, y_max, y_lasts):
+        """# `__add_line_legend_wide`
+        Take a plotly express line plot and adds a special legend to it that is a label at the end of each line with the same colour as that line.
+        THIS WORKS FOR WIDE TABLE FORMATS. I.E. THE DATA IS STORED ACROSS A ROW RATHER THAN A COLUMN
+
+        ## Args:
+            `figure (Figure)`: A plotly express line plot that needs a special legend added
+
+        ## Returns:
+            `Figure`: A plotly express line plot with a special legend added
+        """
         if not self.plot_parameters.based_on_list:
             self.__setup_figure_look(figure)
             return figure
@@ -151,7 +202,7 @@ class Plotter():
         Based on the `Plotter`'s `PlotParamters` return a bar plot
 
         ## Returns:
-            Figure: A plotly express bar plot
+            `Figure`: A plotly express bar plot
         """
         if self.plot_parameters.based_on == COLUMNS:
             figure = go.Figure()
@@ -205,7 +256,7 @@ class Plotter():
         Based on the `Plotter`'s `PlotParamters` return a pie plot
 
         ## Returns:
-            Figure: A plotly express pie plot
+            `Figure`: A plotly express pie plot
         """
         if self.plot_parameters.based_on == COLUMNS:
             figure = go.Figure()
@@ -228,8 +279,8 @@ class Plotter():
         Given a plotly express figure, set up the default apperance settings to it.
         There is also an optional argument `transpose` which if true will rotate the plot 90 degrees clockwise (for example a bar chart's base will be on the y-axis).
         ## Args:
-            figure (Figure): A plotly express figure
-            transpose (bool, optional): If true then the plot's contents will be rotated 90 degrees clockwise. Defaults to False.
+            `figure (Figure)`: A plotly express figure
+            `transpose (bool, optional)`: If true then the plot's contents will be rotated 90 degrees clockwise. Defaults to False.
         """
         figure.update_layout(plot_bgcolor = "White", 
                         title = self.plot_parameters.plot_title, 
@@ -242,20 +293,21 @@ class Plotter():
                         title_x = 0.0 if self.plot_parameters.title_position == "Left" else 0.5 if self.plot_parameters.title_position == "Center" else 1.0)
         if not transpose:
             figure.update_xaxes(title_text = self.plot_parameters.x_label, showgrid = False)
-            figure.update_yaxes(title_text = self.plot_parameters.y_label, griddash = "dot", gridcolor = "LightGrey", rangemode="tozero", zeroline = True)
+            figure.update_yaxes(title_text = self.plot_parameters.y_label, griddash = "dot", gridcolor = "#222222", rangemode="tozero", zeroline = True)
         else:
-            figure.update_xaxes(title_text = self.plot_parameters.y_label, griddash = "dot", gridcolor = "LightGrey")
+            figure.update_xaxes(title_text = self.plot_parameters.y_label, griddash = "dot", gridcolor = "#222222")
             figure.update_yaxes(title_text = self.plot_parameters.x_label, showgrid = False, rangemode="tozero", zeroline = True)
+
 
 def get_tick_format(type: str) -> str:
     """# `get_tick_format`
     Based on the given TickFormat enum value, return the plotly tick format literal for the axes
 
     ## Args:
-        type (TickFormat): A tick format represented by the TickFormat enum
+        `type (TickFormat)`: A tick format represented by the TickFormat enum
 
     ## Returns:
-        str: The tick format literal used in Plotly
+        `str`: The tick format literal used in Plotly
     """
     match type:
         case "Full":

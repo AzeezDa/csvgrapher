@@ -82,9 +82,24 @@ class Querier:
         return self.__uniques[column]
 
     def dataframe(self) -> DataFrame:
+        """# `dataframe`
+
+        Returns:
+            `DataFrame`: The underlying pandas dataframe
+        """
         return self.__dataframe
 
     def incorporate_dtype(self, column: str, values: list[str]) -> list:
+        """# `incorporate_dtypes`
+        Takes a list of strings and a column name then returns a list of the same values but convereted to datatype from the column they came from.
+        This is used to transform strings on the Qt list widgets into data with the correct data types used in the plots or queries.
+        ## Args:
+            `column (str)`: The column from which the values come from
+            `values (list[str])`: A list of values to change the data type of
+
+        ## Returns:
+            `list`: A list with values converted to their actual data type
+        """
         converted_values = values
         try:
             if self.__dataframe.dtypes[column] == int64:

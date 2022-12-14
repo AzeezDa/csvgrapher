@@ -760,6 +760,90 @@
        <string>Legend Title</string>
       </property>
      </widget>
+     <widget class="QSpinBox" name="yTicks">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>160</y>
+        <width>91</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>5</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="_b_label_9">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>140</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Y Ticks</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="_b_label_10">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>140</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>X Ticks</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="xTicks">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>160</y>
+        <width>91</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>5</number>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="enableYTicks">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>190</y>
+        <width>91</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Custom Y Ticks</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="enableXTicks">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>190</y>
+        <width>91</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Custom X Ticks</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QPushButton" name="applyButton">

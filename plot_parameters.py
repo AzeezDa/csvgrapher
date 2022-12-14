@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum
 
 @dataclass
 class PlotParameters:
@@ -24,3 +23,7 @@ class PlotParameters:
     title_position: str
     x_tick_format: str
     y_tick_format: str
+    enable_x_ticks: bool
+    enable_y_ticks: bool
+    x_ticks: int
+    y_ticks: int
