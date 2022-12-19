@@ -1,149 +1,314 @@
+import math
 import pandas as pd
-from numpy import int64
-import plotly.graph_objects as go
+from pandas import DataFrame
 import plotly.express as px
-from dataclasses import dataclass
+import plotly.graph_objects as go
+from plot_parameters import PlotParameters
+from numpy import linspace, log10, floor
 
 pd.options.plotting.backend = "plotly"
 COLORS = px.colors.qualitative.Plotly
-
-@dataclass
-class PlotParameters:
-    xlabel: str
-    ylabel: str
-    width: int
-    height: int
-    font_size: int
-    legend_title: str
-    title: str
-    title_position: str
-    xaxis_ticks: str
-    yaxis_ticks: str
-    b_show_legend: bool
-    b_multicoloured: bool
+COLOR_AMOUNT = len(COLORS)
+COLUMNS = "COLUMNS" # To avoid typos doing hocus pocus xD
 
 class Plotter():
-    def __init__(self, file_name):
-        self.file_name = file_name
-        self.data = pd.read_csv(file_name)
+    """# `Plotter`
+    A class that stores a pandas `DataFrame` and a `PlotParameters` dataclass and uses them to plot Plotly graphs.
+    """
+    def __init__(self, dataframe: DataFrame, plot_parameters: PlotParameters):
+        """# `Plotter`
+        Initalise the `Plotter` class.
 
-        self.columns = self.data.columns.to_list()
+        ## Args:
+            - `dataframe (DataFrame)`: A pandas `DataFrame` that will be plotted
+            - `plot_parameters (PlotParameters)`: An instance of the `PlotParameters` holding the settings from the Qt window
+        """
+        self.dataframe = dataframe
+        self.plot_parameters = plot_parameters
 
-        self.uniques = dict()
-        for c in self.columns:
-            self.uniques[c] = self.data[c].unique()
+    def plot(self):
+        """# `plot`
 
-    def get_columns(self) -> list[str]:
-        return self.columns
+        ## Returns:
+            `Figure | None`: Returns a `plotly.express` plot based on the plot parameters
+        """
+        figure = None
+        match self.plot_parameters.plot_type:
+            case "Line":
+                figure = self.__get_line_figure()
+            case "Bar":
+                figure = self.__get_bar_figure()
+            case "Pie":
+                figure = self.__get_pie_figure()
 
-    def get_uniques_in(self, name: str) -> list[str]:
-        return [] if name == '' else [str(x) for x in self.uniques[name]]
+        return figure
 
-    def get_line_fig(self, x: str, y: str, col_graph: str, graphs: list[str], params: PlotParameters):
-        df = self.data.loc[self.data[col_graph].isin(graphs)]
+    
+    def __get_line_figure(self):
+        """# `__get_line_figure`
+        Based on the `Plotter`'s `PlotParamters` return a line plot
 
-        fig = px.line(df, x = x, y = y, color=col_graph)
+        ## Returns:
+            `Figure`: A plotly express line plot
+        """
+        figure = go.Figure()
+        if self.plot_parameters.based_on == COLUMNS:
+            x_vals = self.dataframe.loc[:, self.plot_parameters.x_axis].values.tolist()
+            max_y = 0
+            y_lasts = []
+            for column in self.plot_parameters.based_on_list:
+                values = self.dataframe.loc[:, column].values.tolist()
+                y_lasts.append(values[-1])
+                max_y = max(max_y, max(values))
+                figure.add_scatter(x = x_vals, y = values, name = column)
+            figure = self.__add_line_legend_wide(figure, max_y, y_lasts)
+        else:
+            dataframe = self.dataframe.loc[self.dataframe[self.plot_parameters.based_on].isin(self.plot_parameters.based_on_list)]
+            figure = px.line(dataframe,
+                x = self.plot_parameters.x_axis,
+                y = self.plot_parameters.y_axis,
+                color = self.plot_parameters.based_on)
+            figure = self.__add_line_legend_long(figure)
 
-        if not graphs:
-            setup_fig_look(fig, params)
-            return fig
 
+        self.__setup_figure_look(figure)
+
+        margin = max(map(len, self.plot_parameters.based_on_list))
+        figure.update_layout(showlegend=False, margin=dict(r=self.plot_parameters.width / 15 + margin * 6))
+        figure.update_xaxes(title_font=dict(color='Black'), tickfont = dict(color='Black'))
+        figure.update_yaxes(title_font=dict(color='Black'), tickfont = dict(color='Black'))
         
-        L = len(COLORS)
-        ymax = max(df[y])
+        if self.plot_parameters.enable_x_ticks:
+            self.__custom_ticks(figure, True)
+        if self.plot_parameters.enable_y_ticks:
+            self.__custom_ticks(figure, False)
 
-        yld = []
-        for i, g in enumerate(graphs):
-            ylasts = df.loc[df[col_graph] == g]
-            ylast = ylasts.iloc[-1, df.columns.get_loc(y)]
-            yld.append([g, COLORS[i%L], ylast/ymax])
+        return figure
 
-        yld.sort(reverse=True, key=lambda x: x[2])
+    def __custom_ticks(self, figure, is_x: bool):
+        """ # `__custom_ticks`
+
+        ## Args:
+            `figure (Figure)`: A line plot to modify the number of ticks of
+            `is_x (bool)`: Specifices if the changes is done on the x or the y axis
+        """
+        data = figure.data[0].x if is_x else figure.data[0].y
+
+        max0, min0 = max(data), min(data)
+
+        # Find the max amongst all plotted data
+        for d in range(1, len(figure.data)):
+            data = figure.data[d].x if is_x else figure.data[d].y
+            max0, min0 = max(max0, max(data)), min(min0, min(data))
+
+        # Replace all non significant digit values with 0's to have "nice" linespace tick values
+        maxdat = abs(max0)
+        maxexp = 0 if maxdat == 0 else floor(log10(maxdat))
+        mindat = abs(min0)
+        minexp = 0 if mindat == 0 else floor(log10(mindat))
+        nticks = self.plot_parameters.x_ticks if is_x else self.plot_parameters.y_ticks
+        tick_vals = linspace(10**minexp * floor(mindat/(10**minexp)) * (-1 if min0 < 0 else 1), 
+                          10**maxexp * floor(maxdat/(10**maxexp)) * (-1 if max0 < 0 else 1), 
+                          endpoint = True, num=nticks)[1:]
+
+        if is_x:
+            figure.update_xaxes(tickvals = tick_vals, nticks = nticks)
+        else:
+            figure.update_yaxes(tickvals = tick_vals, nticks = nticks)
+
+    def __add_line_legend_long(self, figure):
+        """# `__add_line_legend_long`
+        Take a plotly express line plot and adds a special legend to it that is a label at the end of each line with the same colour as that line.
+        THIS WORKS FOR LONG TABLE FORMATS. I.E DATA IS STORED IN A COLUMN
+
+        ## Args:
+            `figure (Figure)`: A plotly express line plot that needs a special legend added
+
+        ## Returns:
+            `Figure`: A plotly express line plot with a special legend added
+        """
+        if not self.plot_parameters.based_on_list:
+            self.__setup_figure_look(figure)
+            return figure
+
+        y_max = max(self.dataframe[self.plot_parameters.y_axis])
+
+        y_last_distances = []
+        for i, based_on in enumerate(self.plot_parameters.based_on_list):
+            y_lasts = self.dataframe.loc[self.dataframe[self.plot_parameters.based_on] == based_on]
+            y_last = y_lasts.iloc[-1, self.dataframe.columns.get_loc(self.plot_parameters.y_axis)]
+            y_last_distances.append([based_on, COLORS[i % COLOR_AMOUNT], y_last/y_max])
+
+        y_last_distances.sort(reverse=True, key=lambda x: x[2])
         
-        ratio = float(params.width)/params.height
-        dy = (params.font_size + 8) / params.height
-        for i in range(len(yld)):
-            if i > 1 and abs(yld[i-1][2] - yld[i][2]) < dy:
-                cdy = yld[i-1][2] - yld[i][2]
-                for j in range(i, len(yld)):
-                    yld[j][2] -= 1.01*dy-cdy
+        aspect_ratio = self.plot_parameters.width/self.plot_parameters.height
+        dy = (self.plot_parameters.font_size + 8) / self.plot_parameters.height
+        for i in range(len(y_last_distances)):
+            current_dy = y_last_distances[i-1][2] - y_last_distances[i][2]
+            if i > 1 and abs(current_dy) < dy:
+                for j in range(i, len(y_last_distances)):
+                    y_last_distances[j][2] -= 1.01*dy-current_dy
 
-            font = {"color": yld[i][1]}
-            fig.add_annotation(font=font, 
-                               x=max(1.008, 1+(ratio-1)/(40*ratio)), y=yld[i][2], 
+            font = {"color": y_last_distances[i][1]}
+            figure.add_annotation(font=font, 
+                               x=max(1.008, 1+(aspect_ratio-1)/(40*aspect_ratio)), y=y_last_distances[i][2], 
                                xref="x domain", yref="paper",
                                ax=1, ay = 0, xanchor="left", yanchor="middle",
-                               text=yld[i][0], showarrow=False)
+                               text=y_last_distances[i][0], showarrow=False)
 
-        setup_fig_look(fig, params)
+        return figure
 
-        margin = max(map(len, graphs))
-        fig.update_layout(showlegend=False, margin=dict(r=params.width/15+margin*6))
+    def __add_line_legend_wide(self, figure, y_max, y_lasts):
+        """# `__add_line_legend_wide`
+        Take a plotly express line plot and adds a special legend to it that is a label at the end of each line with the same colour as that line.
+        THIS WORKS FOR WIDE TABLE FORMATS. I.E. THE DATA IS STORED ACROSS A ROW RATHER THAN A COLUMN
 
-        return fig
+        ## Args:
+            `figure (Figure)`: A plotly express line plot that needs a special legend added
 
-    def get_bar_fig(self, label: str, value: str, filter:str, include_labels: list[str], filtered: list[str], orientation: str, params: PlotParameters):
-        if self.data.dtypes[label] == int64:
-            include_labels = [int64(x) for x in include_labels]
-    
-        if self.data.dtypes[filter] == int64:
-            filtered = [int64(x) for x in filtered]
+        ## Returns:
+            `Figure`: A plotly express line plot with a special legend added
+        """
+        if not self.plot_parameters.based_on_list:
+            self.__setup_figure_look(figure)
+            return figure
 
-        df = self.data[self.data[label].isin(include_labels) & self.data[filter].isin(filtered)]
-        df[filter] = df[filter].astype(str)
-        df[label] = df[label].astype(str)
+        y_last_distances = []
+        for i, based_on in enumerate(self.plot_parameters.based_on_list):
+            y_last_distances.append([based_on, COLORS[i % COLOR_AMOUNT], y_lasts[i]/y_max])
 
-        if orientation == "v":
-            fig = px.bar(df, x=label, y=value, color=filter)
-            fig.update_layout(xaxis={'categoryorder':'total descending'})
+        y_last_distances.sort(reverse=True, key=lambda x: x[2])
+        
+        aspect_ratio = self.plot_parameters.width/self.plot_parameters.height
+        dy = (self.plot_parameters.font_size + 8) / self.plot_parameters.height
+        for i in range(len(y_last_distances)):
+            current_dy = y_last_distances[i-1][2] - y_last_distances[i][2]
+            if i > 1 and abs(current_dy) < dy:
+                for j in range(i, len(y_last_distances)):
+                    y_last_distances[j][2] -= 1.01*dy-current_dy
+
+            font = {"color": y_last_distances[i][1]}
+            figure.add_annotation(font=font, 
+                               x=max(1.008, 1+(aspect_ratio-1)/(40*aspect_ratio)), y=y_last_distances[i][2], 
+                               xref="x domain", yref="paper",
+                               ax=1, ay = 0, xanchor="left", yanchor="middle",
+                               text=y_last_distances[i][0], showarrow=False)
+
+        return figure
+
+
+    def __get_bar_figure(self):
+        """# `__get_bar_figure`
+        Based on the `Plotter`'s `PlotParamters` return a bar plot
+
+        ## Returns:
+            `Figure`: A plotly express bar plot
+        """
+        if self.plot_parameters.based_on == COLUMNS:
+            figure = go.Figure()
+            header = [self.plot_parameters.x_axis]+self.plot_parameters.based_on_list
+            dataframe = self.dataframe.loc[:,header]
+            if self.plot_parameters.vertical_bar:
+                for data in dataframe.values.tolist():
+                    figure.add_bar(
+                        x = self.plot_parameters.based_on_list,
+                        y = data[1::],
+                        name = self.plot_parameters.x_axis)
+                figure.update_layout(xaxis={'categoryorder':'total ascending'})
+            else:
+                for data in dataframe.values.tolist():
+                    figure.add_bar(
+                        y = self.plot_parameters.based_on_list,
+                        x = data[1::],
+                        name = self.plot_parameters.x_axis,
+                        orientation = "h")
+                figure.update_layout(yaxis={'categoryorder':'total ascending'})
         else:
-            fig = px.bar(df, x=value, y=label, color=filter, orientation=orientation)
-            params.xlabel, params.ylabel = params.ylabel, params.xlabel
-            fig.update_layout(yaxis={'categoryorder':'total descending'})
+            dataframe = self.dataframe.loc[self.dataframe[self.plot_parameters.based_on].isin(self.plot_parameters.based_on_list)]
+            if self.plot_parameters.vertical_bar:
+                figure = px.bar(dataframe,
+                    x = self.plot_parameters.x_axis,
+                    y = self.plot_parameters.y_axis,
+                    color = self.plot_parameters.based_on_list)
+                figure.update_layout(xaxis={'categoryorder':'total ascending'})
+            else:
+                figure = px.bar(dataframe,
+                    x = self.plot_parameters.y_axis,
+                    y = self.plot_parameters.x_axis,
+                    color = self.plot_parameters.based_on_list,
+                    orientation = "h")
+                figure.update_layout(yaxis={'categoryorder':'total ascending'})
         
-        setup_fig_look(fig, params, orientation != "v")
-        fig.update_layout(barmode="stack", showlegend = params.b_show_legend)
+        self.__setup_figure_look(figure, not self.plot_parameters.vertical_bar)
+        figure.update_layout(barmode="stack", showlegend = self.plot_parameters.show_legend)
         
-        if params.b_multicoloured:
-            fig.update_traces(marker_color = COLORS)
+        if self.plot_parameters.based_on == COLUMNS:
+            if self.plot_parameters.multicoloured_bar:
+                figure.update_traces(marker_color = COLORS)
+        else:
+            if not self.plot_parameters.multicoloured_bar:
+                figure.update_traces(marker_color = COLORS)
 
-        return fig
+        return figure
 
-    def get_pie_fig(self, label: str, value:str, filter: str, includes: list[str], filtered: list[str], params: PlotParameters):
-        if self.data.dtypes[label] == int64:
-            includes = [int64(x) for x in includes]
+    def __get_pie_figure(self):
+        """# `__get_pie_figure'
+        Based on the `Plotter`'s `PlotParamters` return a pie plot
+
+        ## Returns:
+            `Figure`: A plotly express pie plot
+        """
+        if self.plot_parameters.based_on == COLUMNS:
+            figure = go.Figure()
+            figure.add_pie(labels = self.plot_parameters.based_on_list,
+                           values = self.dataframe.loc[:, self.plot_parameters.based_on_list].values.tolist()[0])
+        else:
+            dataframe = self.dataframe.loc[self.dataframe[self.plot_parameters.based_on].isin(self.plot_parameters.based_on_list)]
+            figure = px.pie(dataframe,
+                        names = self.plot_parameters.x_axis,
+                        values = self.plot_parameters.y_axis)
+
+        self.__setup_figure_look(figure)
+        figure.update_traces(textinfo = "label+percent", textposition="outside")
+        figure.update_layout(showlegend = False)
         
-        if self.data.dtypes[filter] == int64:
-            filtered = [int64(x) for x in filtered]
+        return figure
 
-        df = self.data[self.data[label].isin(includes) & self.data[filter].isin(filtered)]
-        df[filter] = df[filter].astype(str)
+    def __setup_figure_look(self, figure, transpose = False):
+        """# `__setup_figure_look`
+        Given a plotly express figure, set up the default apperance settings to it.
+        There is also an optional argument `transpose` which if true will rotate the plot 90 degrees clockwise (for example a bar chart's base will be on the y-axis).
+        ## Args:
+            `figure (Figure)`: A plotly express figure
+            `transpose (bool, optional)`: If true then the plot's contents will be rotated 90 degrees clockwise. Defaults to False.
+        """
+        figure.update_layout(plot_bgcolor = "White", 
+                        title = self.plot_parameters.plot_title, 
+                        legend_title_text = self.plot_parameters.legend_title,
+                        xaxis_tickformat = get_tick_format(self.plot_parameters.x_tick_format),
+                        yaxis_tickformat = get_tick_format(self.plot_parameters.y_tick_format),
+                        width = self.plot_parameters.width,
+                        height = self.plot_parameters.height,
+                        font = dict(size = self.plot_parameters.font_size),
+                        title_x = 0.0 if self.plot_parameters.title_position == "Left" else 0.5 if self.plot_parameters.title_position == "Center" else 1.0)
+        if not transpose:
+            figure.update_xaxes(title_text = self.plot_parameters.x_label, showgrid = False)
+            figure.update_yaxes(title_text = self.plot_parameters.y_label, griddash = "dot", gridcolor = "#222222", rangemode="tozero", zeroline = True)
+        else:
+            figure.update_xaxes(title_text = self.plot_parameters.y_label, griddash = "dot", gridcolor = "#222222")
+            figure.update_yaxes(title_text = self.plot_parameters.x_label, showgrid = False, rangemode="tozero", zeroline = True)
 
-        fig = px.pie(df, values=value, names=label)
-        fig.update_traces(textinfo = "label+percent", textposition="outside")
-        fig.update_layout(title = params.title, legend_title_text = params.legend_title, showlegend=False)
-        
-        return fig
 
-def setup_fig_look(fig, params: PlotParameters, transpose = False):
+def get_tick_format(type: str) -> str:
+    """# `get_tick_format`
+    Based on the given TickFormat enum value, return the plotly tick format literal for the axes
 
+    ## Args:
+        `type (TickFormat)`: A tick format represented by the TickFormat enum
 
-    fig.update_layout(plot_bgcolor = "White", 
-                      title = params.title, 
-                      legend_title_text = params.legend_title,
-                      xaxis_tickformat = get_tick_format(params.xaxis_ticks),
-                      yaxis_tickformat = get_tick_format(params.yaxis_ticks),
-                      title_x = 0.0 if params.title_position == "Left" else 0.5 if params.title_position == "Center" else 1.0)
-    if not transpose:
-        fig.update_xaxes(title_text = params.xlabel, showgrid = False)
-        fig.update_yaxes(title_text = params.ylabel, griddash = "dot", gridcolor = "LightGrey", rangemode="tozero", zeroline = True)
-    else:
-        fig.update_xaxes(title_text = params.xlabel, griddash = "dot", gridcolor = "LightGrey")
-        fig.update_yaxes(title_text = params.xlabel, showgrid = False, rangemode="tozero", zeroline = True)
-
-    return fig
-
-def get_tick_format(type: str):
+    ## Returns:
+        `str`: The tick format literal used in Plotly
+    """
     match type:
         case "Full":
             return "d"
